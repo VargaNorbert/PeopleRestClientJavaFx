@@ -34,14 +34,7 @@ public class ListPeopleController {
         ageCol.setCellValueFactory(new PropertyValueFactory<>("age"));
         Platform.runLater(()-> {
         try {
-            Response response = RequestHandler.get(App.BASE_URL);
-            String content = response.getContent();
-            System.out.println(content);
-            Gson converter = new Gson();
-            Person[] people = converter.fromJson(content,Person[].class);
-            for (Person person: people){
-                peopleTable.getItems().add(person);
-            }
+            loadPeopleFromServer();
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error!");
@@ -53,6 +46,18 @@ public class ListPeopleController {
             }
 
         });
+    }
+
+    private void loadPeopleFromServer() throws IOException {
+        Response response = RequestHandler.get(App.BASE_URL);
+        String content = response.getContent();
+        System.out.println(content);
+        Gson converter = new Gson();
+        Person[] people = converter.fromJson(content,Person[].class);
+        peopleTable.getItems().clear();
+        for (Person person: people){
+            peopleTable.getItems().add(person);
+        }
     }
 
 
@@ -84,8 +89,11 @@ public class ListPeopleController {
             String url = App.BASE_URL + "/" + selected.getId();
             try {
                 RequestHandler.delete(url);
+                loadPeopleFromServer();
             } catch (IOException e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("An error occurred while communicating with the server");
+                alert.show();
             }
         }
 
